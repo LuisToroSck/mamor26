@@ -34,13 +34,20 @@ El catálogo y la carta se personalizan en `src/app/adventure.data.ts`. Los IDs 
 
 Antes de guardar los regalos nuevos, publicar en Firebase Console las reglas de [docs/firestore.rules](docs/firestore.rules). Incluyen el límite de 19, todos los IDs y las reglas de Pokémon que compartiste. Se generan desde el catálogo con `npm.cmd run rules:generate`; ese comando no las publica.
 
-## GitHub
+## GitHub Pages
 
-El repositorio local usa `main`. La publicación en GitHub Pages sigue pendiente; no hay workflow de despliegue en esta entrega. Crear un repositorio vacío y conectar su URL:
+El remoto ya es `https://github.com/LuisToroSck/mamor26.git`. El workflow `.github/workflows/deploy-pages.yml` prueba y compila la aventura, y publica `dist/mamor26/browser` al hacer push a `main`. Usa `--base-href /mamor26/`.
+
+1. En el repositorio de GitHub: Settings → Pages → Build and deployment → Source → **GitHub Actions**.
+2. Subir la configuración:
 
 ```powershell
-git remote add origin https://github.com/TU-USUARIO/mamor26.git
-git push -u origin main
+git add .github/workflows/deploy-pages.yml README.md
+git commit -m "Configurar GitHub Pages"
+git push origin main
 ```
 
-Subir código no publica automáticamente la web. Para Pages se debe configurar el build y el base href del nombre final del repositorio.
+3. Revisar la pestaña Actions hasta que termine «Deploy Angular to GitHub Pages».
+4. Abrir https://luistorosck.github.io/mamor26/.
+
+Cada nuevo push a main actualiza la web. También se puede ejecutar desde Actions → Run workflow. El workflow no publica las reglas de Firebase: se gestionan en su consola.
