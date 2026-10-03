@@ -1,0 +1,35 @@
+﻿:host{display:block}
+button{font:inherit;cursor:pointer}
+button:disabled{opacity:.5;cursor:default}
+.back{min-height:44px;padding:10px 0;border:0;background:none;color:#dec89e}
+.eyebrow{color:#d8bc83;font-size:10px;letter-spacing:.2em;line-height:1.8}
+h1{font:400 clamp(38px,7vw,65px)/1.1 Georgia,serif;letter-spacing:-.03em;margin:15px 0 22px}
+h1 em{color:#e8cc93}
+h2{font:400 25px/1.3 Georgia,serif}
+.narration{font:italic 18px/1.7 Georgia,serif;min-height:62px;color:#ddd1bb}
+.scene{position:relative;isolation:isolate;height:370px;overflow:hidden;border:1px solid #e7ce9a40;border-radius:130px 130px 24px 24px;background:radial-gradient(ellipse at 50% 20%,#333953,#18213a 70%);transition:background 1s;box-shadow:inset 0 0 60px #090e2250}
+.scene.sunrise{background:radial-gradient(ellipse at 50% 15%,#55506a,#1d2e44 75%)}
+.hills{position:absolute;bottom:-100px;left:-10%;width:120%;height:210px;background:#1b3c3d;border-radius:50%;z-index:-1;box-shadow:80px -12px 0 #253e42}
+.little-house{position:absolute;bottom:57px;left:calc(50% - 32px);width:64px;height:43px;border-radius:4px;background:#46535a;display:flex;gap:5px;justify-content:center;align-items:center;clip-path:polygon(0 35%,50% 0,100% 35%,100% 100%,0 100%)}
+.little-house span{color:#9692a0;font-size:13px}
+.little-house.warm span{color:#ffe0a0;text-shadow:0 0 12px #ecc16f}
+.scene-caption{position:absolute;bottom:12px;left:10px;right:10px;text-align:center;color:#dfd2b4;font-size:12px;line-height:1.6;pointer-events:none}
+.house-play{position:absolute;top:112px;left:calc(50% - 95px);width:190px;height:147px;background:#6d6569;border-radius:4px;display:flex;justify-content:center;align-items:flex-start;padding-top:22px;gap:10px}
+.roof{position:absolute;top:-52px;left:-15px;width:220px;height:65px;background:#a08e7b;clip-path:polygon(50% 0,100% 100%,0 100%)}
+.window{width:44px;height:48px;min-width:44px;background:#27394c;color:#778397;border:2px solid #b29b80;border-radius:15px 15px 2px 2px;font-size:25px}
+.window.on{background:#f0d398;color:#7c6041;box-shadow:0 0 25px #f0d39880;opacity:1}
+.door{position:absolute;bottom:0;left:78px;width:34px;height:53px;display:grid;place-items:center;background:#b3a38c;color:#e6ca96;border-radius:17px 17px 0 0}
+.gift-card{margin-top:20px;padding:24px;text-align:center;color:#33354b;background:#eee0c7;border-radius:18px;animation:arrive .5s ease-out}
+.gift-card .eyebrow{color:#756342}
+.gift-card p,.ending p{line-height:1.7;font-size:14px}
+.package-symbol{font:48px Georgia,serif}
+.gift-card .back{color:#675642}
+.primary{min-height:50px;border:1px solid #998665;border-radius:30px;background:#ebd3a5;color:#25283b;padding:14px 23px;margin-top:14px}
+.help{text-align:center;font-size:13px;line-height:1.8;color:#c7c3d1}
+.collection{text-align:center;margin-top:28px}
+.keepsake{width:48px;height:48px;border:1px solid #d6bd7e40;border-radius:50%;margin:4px;background:#ffffff05;color:#ecd39c;font:24px Georgia,serif}
+.ending{text-align:center;padding:20px 0}
+.ocean{position:absolute;bottom:0;width:100%;height:50px;background:#345b68;color:#90b3b6;letter-spacing:8px;text-align:center;padding:8px}
+.finished{box-shadow:inset 0 0 70px #edce8940}
+.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+@media(max-width:380px){.sun-orb{left:7%;font-size:75px}.moon-orb.meeting{right:7%}.narration{font-size:17px}.cloud{width:95px;font-size:85px}}

@@ -1,0 +1,72 @@
+<button class="back" (click)="back.emit()">← Volver al mapa</button>
+<p class="eyebrow">{{ chapter().id === 'secret' ? 'UN RINCÓN SECRETO' : 'OTRO RINCÓN DE TU UNIVERSO' }} · {{ count() }} / {{ chapter().gifts.length }}</p>
+<h1>{{ chapter().title }}</h1>
+@if (savedGift(); as gift) { <p class="saved" role="status">✓ {{ gift.name }}<br>{{ gift.message }}</p> }
+<p class="narration" aria-live="polite">{{ narration() }}</p>
+<div #activity class="scene" [class]="'scene ' + chapter().id" tabindex="-1" role="group" [attr.aria-label]="chapter().title">
+  <div class="dust" aria-hidden="true">✧　　　·　　　✦<br>　·　　　✧　　　·</div>
+  @if (!nextGift()) {
+    <div class="celebration" aria-hidden="true"><span>{{ chapter().icon }}</span><strong>♡</strong></div><p class="caption">Un poquito más de tu universo.</p>
+  } @else if (ready()) {
+    <div class="surprise" aria-hidden="true">{{ chapter().id === 'spooky' ? '👻' : '✦' }}</div>
+    <p class="caption">{{ chapter().id === 'spooky' ? '¡Boo!… perdón. ♡' : 'Una sorpresa te está esperando.' }}</p>
+  } @else {
+    @switch (nextGift()?.activity) {
+      @case ('grow') {
+        <div class="plant" aria-hidden="true">{{ stage() === 0 ? '·' : stage() < 3 ? '🌱' : '🌿' }}</div>
+        @if (stage() < 3) { <button class="center-action" [disabled]="blocked()" (click)="advance()">{{ stage() === 0 ? 'Plantar una semilla' : 'Regar la plantita 💧' }}</button> }
+        @else { <div class="actions low">@for (i of [0, 1]; track i) { <button [disabled]="blocked() || taps().includes(i)" (click)="tap(i)">{{ taps().includes(i) ? '🐞' : '🍃' }}<small>{{ taps().includes(i) ? '¡Hola!' : 'Mirar entre las hojas' }}</small></button> }</div> }
+      }
+      @case ('fireflies') {
+        <div class="moon" aria-hidden="true">☾</div><div class="actions low">@for (i of [0, 1, 2]; track i) { <button [class.lit]="taps().includes(i)" [disabled]="blocked() || taps().includes(i)" [attr.aria-label]="'Encender luciérnaga ' + (i + 1)" (click)="tap(i)">✧<small>{{ i + 1 }}</small></button> }</div>
+      }
+      @case ('spiral') {
+        <div class="spiral" [style.transform]="'rotate(' + stage() * 90 + 'deg)'" aria-hidden="true">🌀</div><button class="center-action" [disabled]="blocked()" (click)="advance()">Dar una vuelta · {{ stage() }} / 4</button>
+      }
+      @case ('pumpkins') {
+        <div class="moon" aria-hidden="true">☾</div><div class="actions low">@for (i of [0, 1, 2]; track i) { <button [disabled]="blocked() || taps().includes(i)" [attr.aria-label]="'Visitar calabaza ' + (i + 1)" (click)="tap(i)">{{ taps().includes(i) ? '✧' : '🎃' }}<small>{{ taps().includes(i) ? 'Aquí no está…' : 'Toc, toc' }}</small></button> }</div>
+      }
+      @case ('steam') {
+        <div class="table" aria-hidden="true">🫖</div><div class="actions steam">@for (i of [0, 1, 2]; track i) { <button [class.lit]="taps().includes(i)" [disabled]="blocked() || taps().includes(i)" [attr.aria-label]="'Unir vapor ' + (i + 1)" (click)="tap(i)">{{ taps().includes(i) ? '♡' : '☁' }}<small>{{ i + 1 }}</small></button> }</div>
+      }
+      @case ('blend') {
+        <div class="table" aria-hidden="true">🫖</div>
+        @if (stage() < 3) { <div class="actions aromas">@for (aroma of ['Menta', 'Lavanda', 'Canela']; track aroma; let i = $index) { <button [disabled]="blocked() || taps().includes(i)" (click)="tap(i)">{{ ['🌿', '❀', '✧'][i] }}<small>{{ aroma }}</small></button> }</div> }
+        @else { <button class="center-action" [disabled]="blocked()" (click)="advance()">Remover suavemente · {{ stage() - 3 }} / 2</button> }
+      }
+      @case ('warmth') {
+        <div class="table" aria-hidden="true">🫖</div>
+        @if (stage() < 3) { <div class="actions steam">@for (i of [0, 1, 2]; track i) { <button [class.lit]="taps().includes(i)" [disabled]="blocked() || taps().includes(i)" [attr.aria-label]="'Guardar calor ' + (i + 1)" (click)="tap(i)">✦<small>Calorcito</small></button> }</div> }
+        @else { <button class="center-action" [disabled]="blocked()" (click)="advance()">Guardar el calor ♡</button> }
+      }
+      @case ('paint') {
+        <div class="painted-sky">@for (i of [0, 1, 2]; track i) { <button [style.background]="painting()[i] || '#ffffff10'" [disabled]="blocked()" [attr.aria-label]="'Pintar parte ' + (i + 1) + ' del cielo'" (click)="paint(i)">{{ ['☀', '☾', '✦'][i] }}</button> }</div>
+        <div class="swatches">@for (color of colors; track color; let i = $index) { <button [style.background]="color" [class.selected]="selectedColor() === color" [disabled]="blocked()" [attr.aria-label]="'Elegir ' + colorNames[i]" [attr.aria-pressed]="selectedColor() === color" (click)="chooseColor(i)"><span>{{ colorNames[i] }}</span></button> }</div>
+        <p class="caption">Elige un color y toca el cielo. Uno distinto para cada parte.</p>
+      }
+      @case ('prepare') {
+        <div class="house" aria-hidden="true"><div class="roof"></div><span>♡</span></div><div class="actions low">@for (item of ['Manta', 'Luz', 'Cojín']; track item; let i = $index) { <button [class.lit]="taps().includes(i)" [disabled]="blocked() || taps().includes(i)" (click)="tap(i)">{{ ['▧', '✧', '♡'][i] }}<small>{{ item }}</small></button> }</div>
+      }
+      @case ('door') {
+        <div class="house"><div class="roof" aria-hidden="true"></div><button class="door" [disabled]="blocked()" (click)="advance()" aria-label="Llamar a la puerta">♡<small>Toc, toc</small></button></div><p class="caption">{{ stage() }} / 3 · Alguien está por llegar.</p>
+      }
+      @case ('frog') {
+        <div class="frog" aria-hidden="true" [style.left.%]="20 + stage() * 17">🐸</div>
+        @if (stage() < 3) { <div class="actions low">@for (i of [0, 1, 2]; track i) { <button [disabled]="blocked() || i < stage()" [attr.aria-label]="'Saltar al nenúfar ' + (i + 1)" (click)="tap(i)">🍃<small>{{ i + 1 }}</small></button> }</div> }
+        @else { <div class="actions low">@for (i of [0, 1]; track i) { <button [class.lit]="taps().includes(i)" [disabled]="blocked() || taps().includes(i)" [attr.aria-label]="'Encender lucecita ' + (i + 1)" (click)="tap(i)">✧<small>Bienvenida</small></button> }</div> }
+      }
+    }
+  }
+</div>
+@if (card(); as gift) {
+  <article class="gift-card" aria-live="polite">
+    @if (found().includes(gift.id)) { <p class="eyebrow">YA ES PARTE DE TU UNIVERSO</p><h2>{{ gift.name }}</h2><p>{{ gift.message }}</p><button class="back" (click)="review.set(null)">Continuar</button> }
+    @else {
+      <p class="eyebrow">UNA SORPRESA PARA TI</p><h2>La magia está lista ♡</h2><p>Tu compañero de aventura tiene algo para entregarte. Cuando lo tengas en tus manos, ábrelo y vuelve aquí.</p>
+      <button class="primary" [disabled]="blocked() || saving()" (click)="openGift()">{{ saving() ? 'Guardando tu regalo…' : 'Ya abrí mi regalo ♡' }}</button>
+      @if (saveError()) { <p role="alert">{{ saveError() }}<br>Tu regalo aún no está confirmado.</p><button class="back" [disabled]="saving()" (click)="retry.emit()">Volver a conectar</button> }
+    }
+  </article>
+} @else if (nextGift()) { <div class="help"><button class="back" (click)="help.set(!help())" [attr.aria-expanded]="help()">{{ help() ? 'Ocultar ayuda' : '¿Me ayudas un poquito?' }}</button>@if (help()) { <p>Toca los elementos de la escena. Sigue los números cuando aparezcan; no hay prisa ni penalizaciones. En el cielo de colores, elige uno distinto para cada parte.</p> }</div> }
+@if (!nextGift()) { <article class="ending" role="status"><p class="eyebrow">ESTE RINCÓN ESTÁ COMPLETO</p><h2>Qué bonito quedó contigo ♡</h2><button class="primary" [disabled]="blocked()" (click)="nextWorld.emit()">{{ nextLabel() }}</button></article> }
+@if (count()) { <div class="collection"><p class="eyebrow">TUS REGALOS DE ESTE RINCÓN</p>@for (gift of chapter().gifts; track gift.id) { @if (found().includes(gift.id)) { <button class="keepsake" (click)="reviewGift(gift.id)">{{ gift.name }}</button> } }</div> }

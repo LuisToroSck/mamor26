@@ -1,0 +1,48 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /collections/{owner} {
+      allow read, write: if owner == "luis"
+                         || owner == "martin"
+                         || owner == "luis-ash";
+      match /pokemon/{pokemonId} {
+        allow read, write: if owner == "luis"
+                           || owner == "martin"
+                           || owner == "luis-ash";
+      }
+    }
+    match /mamor26Progress/birthday {
+      allow get: if true;
+      allow create, update: if
+        request.resource.data.keys().hasOnly(['found', 'updatedAt', 'version']) &&
+        request.resource.data.keys().hasAll(['found', 'updatedAt', 'version']) &&
+        request.resource.data.version == 1 &&
+        request.resource.data.updatedAt == request.time &&
+        request.resource.data.found is list &&
+        request.resource.data.found.size() <= 19 &&
+        request.resource.data.found.toSet().size() == request.resource.data.found.size() &&
+        request.resource.data.found.hasOnly([
+          'mirror',
+          'clip',
+          'earrings',
+          'holder',
+          'bag',
+          'scrunchie',
+          'fish-clip',
+          'fish-rings',
+          'bug-scrunchies',
+          'moon-hanger',
+          'spiral-ring',
+          'pumpkin-earrings',
+          'cup-one',
+          'cup-two',
+          'thermos',
+          'nyx-palette',
+          'chiikawa',
+          'hachiware',
+          'frog-incense'
+        ]);
+    }
+  }
+}

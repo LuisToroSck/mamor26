@@ -1,0 +1,107 @@
+<button class="back" (click)="back.emit()">← Volver al mapa</button>
+<p class="eyebrow">CAPÍTULO I · {{ count() }} / 6 ESTRELLAS</p>
+<h1>El Sol <em>y la Luna</em></h1>
+<p class="narration" aria-live="polite">{{ narration() }}</p>
+
+<div class="scene" [class.finished]="count() === 6" [class.sunrise]="count() >= 2" [class.revealing]="revealed() === nextGift()?.id">
+  <div class="sky-dust" aria-hidden="true">·　✧　　·　　✦　　·<br>　·　　✧　　·<br>✦　　·　　✧　　·</div>
+  <svg class="sky-lines" viewBox="0 0 360 370" preserveAspectRatio="none" aria-hidden="true">
+    @if (count() >= 3) { <path class="saved-line" d="M70 190 L175 120 L290 185"/> }
+  </svg>
+  <div class="earned-stars" aria-hidden="true">
+    @for (gift of gifts; track gift.id; let i = $index) {
+      <span class="earned-star" [class.lit]="found().includes(gift.id)" [style.left.%]="12 + i * 15" [style.top.px]="210 + (i % 2) * 25">✦</span>
+    }
+  </div>
+  <div class="hills" aria-hidden="true"></div>
+  <div class="little-house" [class.warm]="count() >= 5" aria-hidden="true"><span>▥</span><span>▥</span><span>▥</span></div>
+  @if (!nextGift()) {
+    <div class="final-sky" aria-hidden="true"><span>☀</span><span>☾</span><strong>♡</strong></div>
+    <div class="ocean" aria-hidden="true">～　～　～　～</div>
+  } @else if (revealed() === nextGift()?.id) {
+    <div class="celestial-pair" aria-hidden="true">☀ <span>☾</span></div>
+    <div class="scene-present" aria-hidden="true">{{ nextGift()?.symbol }}</div>
+    <p class="scene-caption">Una sorpresa cayó del cielo.</p>
+  } @else {
+    @switch (nextGift()?.id) {
+      @case ('mirror') {
+        <button class="moon-orb sleepy" [disabled]="blocked()" aria-label="Despertar la luna" (click)="wakeMoon()"><span aria-hidden="true">☾</span><small>z z z</small></button>
+        <p class="scene-caption">Un toquecito basta para empezar.</p>
+      }
+      @case ('clip') {
+        <button class="sun-orb" [class.chosen]="sunChosen()" [class.dragging]="dragging()" [style.transform]="'translate(' + dragOffset().x + 'px, ' + dragOffset().y + 'px)'" [disabled]="blocked()" aria-label="Elegir el sol o arrastrarlo hacia la luna" [attr.aria-pressed]="sunChosen()" (click)="chooseSun()" (pointerdown)="startDrag($event)" (pointermove)="moveDrag($event)" (pointerup)="endDrag($event, moonTarget)" (pointercancel)="cancelDrag()">☀</button>
+        <button #moonTarget class="moon-orb meeting" [class.waiting]="sunChosen()" [disabled]="blocked()" aria-label="Unir el sol con la luna" (click)="meetMoon()">☾</button>
+        <p class="scene-caption">{{ sunChosen() ? 'Ahora toca la luna ♡' : 'El sol quiere acercarse.' }}</p>
+      }
+      @case ('earrings') {
+        <svg class="sky-lines" viewBox="0 0 360 370" preserveAspectRatio="none" aria-hidden="true">
+          @if (path().length >= 2) { <path d="M70 190 L175 120"/> }
+          @if (path().length >= 3) { <path d="M175 120 L290 185"/> }
+        </svg>
+        @for (i of [0, 1, 2]; track i) {
+          <button class="path-star" [class.connected]="path().includes(i)" [style.left.%]="[19.4, 48.6, 80.6][i]" [style.top.%]="[51.4, 32.4, 50][i]" [disabled]="blocked() || path().includes(i)" [attr.aria-label]="'Conectar estrella ' + (i + 1)" (click)="connectStar(i)"><span aria-hidden="true">✦</span><small>{{ i + 1 }}</small></button>
+        }
+        <p class="scene-caption">Dibuja un camino: 1 → 2 → 3</p>
+      }
+      @case ('holder') {
+        <div class="eclipse" aria-hidden="true"></div>
+        @for (i of [0, 1, 2]; track i) {
+          @if (!clearedClouds().includes(i)) {
+            <button class="cloud" [style.left.%]="[8, 32, 57][i]" [style.top.px]="[130, 165, 125][i]" [disabled]="blocked()" [attr.aria-label]="'Mover nube ' + (i + 1)" (click)="clearCloud(i)">☁</button>
+          }
+        }
+        <p class="scene-caption">Detrás de las nubes, algo brilla.</p>
+      }
+      @case ('bag') {
+        <div class="house-play"><div class="roof" aria-hidden="true"></div>
+          @for (i of [0, 1, 2]; track i) {
+            <button class="window" [class.on]="litWindows().includes(i)" [disabled]="blocked() || litWindows().includes(i)" [attr.aria-label]="'Encender ventana ' + (i + 1)" (click)="lightWindow(i)">✧</button>
+          }
+          <div class="door" aria-hidden="true">♡</div>
+        </div>
+        <p class="scene-caption">Un hogar se hace con pequeñas luces.</p>
+      }
+      @case ('scrunchie') {
+        @if (!cometCalled()) {
+          <button class="call-comet" [disabled]="blocked()" (click)="callComet()"><span aria-hidden="true">☄</span>Llamar a una estrella</button>
+        } @else {
+          <div class="comet" aria-hidden="true">✦</div>
+          <button class="wish" [disabled]="blocked()" (click)="placeComet()"><span aria-hidden="true">♡</span>Guardar mi deseo en el cielo</button>
+        }
+        <p class="scene-caption">Tu deseo se queda contigo.</p>
+      }
+    }
+  }
+</div>
+
+@if (card(); as gift) {
+  <article class="gift-card" aria-live="polite">
+    <p class="eyebrow">{{ found().includes(gift.id) ? 'UNA ESTRELLA DE TU UNIVERSO' : 'EL CIELO TE REGALÓ ALGO' }}</p>
+    <div class="package-symbol" aria-hidden="true">{{ gift.symbol }}</div>
+    @if (found().includes(gift.id)) {
+      <h2>{{ gift.name }}</h2><p>{{ gift.message }}</p>
+      <button class="back" (click)="review.set(null)">Volver a mi cielo</button>
+    } @else {
+      <h2>La magia está lista ♡</h2>
+      <p>Tu compañero de aventura tiene una sorpresa para entregarte. Cuando la tengas en tus manos, ábrela y vuelve aquí.</p>
+      <button class="primary" [disabled]="blocked() || saving()" (click)="openGift()">{{ saving() ? 'Guardando tu estrella…' : 'Ya abrí mi regalo ✦' }}</button>
+      @if (saveError()) { <p role="alert">{{ saveError() }}<br>Tu regalo aún no está confirmado.</p><button class="back" [disabled]="saving()" (click)="retry.emit()">Volver a conectar</button> }
+    }
+  </article>
+} @else if (nextGift()) {
+  <div class="help">
+    <button class="back" (click)="help.set(!help())" [attr.aria-expanded]="help()">{{ help() ? 'Ocultar ayuda' : '¿Me ayudas un poquito?' }}</button>
+    @if (help()) { <p>{{ instruction() }}</p> }
+  </div>
+}
+@if (!nextGift()) {
+  <article class="ending" role="status"><p class="eyebrow">TU CONSTELACIÓN ESTÁ COMPLETA</p><h2>Le diste vida a este cielo ♡</h2><p>A lo lejos se escucha el mar.<br>Hay un pececito esperándote.</p><button class="primary" (click)="nextWorld.emit()">Ir al océano →</button><br><button class="back" (click)="back.emit()">Volver al mapa</button></article>
+}
+@if (count()) {
+  <div class="collection" aria-label="Regalos abiertos de este mundo">
+    <p class="eyebrow">LAS ESTRELLAS QUE YA SON TUYAS</p>
+    @for (gift of gifts; track gift.id) {
+      @if (found().includes(gift.id)) { <button class="keepsake" [attr.aria-label]="'Recordar ' + gift.name" (click)="reviewGift(gift.id)">{{ gift.symbol }}<span class="sr-only">{{ gift.name }}</span></button> }
+    }
+  </div>
+}

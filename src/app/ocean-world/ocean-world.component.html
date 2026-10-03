@@ -1,0 +1,62 @@
+<button class="back" (click)="back.emit()">← Volver al mapa</button>
+<p class="eyebrow">CAPÍTULO II · {{ count() }} / 2 TESOROS</p>
+<h1>Bajo <em>el agua</em></h1>
+@if (savedGift(); as gift) {
+  <p class="feedback" role="status">✓ Regalo guardado: {{ gift.name }}.<br>{{ gift.message }}</p>
+}
+<p class="narration" aria-live="polite">
+  @if (!nextGift()) { Los tres peces ya están juntos. Gracias por darle un poquito de vida a este océano. }
+  @else if (revealed()) { Parece que tus nuevos amigos tenían una sorpresa para ti. }
+  @else if (nextGift()?.id === 'fish-clip') { Un pececito dorado quiere mostrarte algo. Síguelo con pequeños toques. }
+  @else { «Me faltan mis dos amigos», dice el pez. ¿Los buscamos entre las algas y las conchas? }
+</p>
+<div #activity class="sea" tabindex="-1" role="group" [attr.aria-label]="nextGift()?.id === 'fish-rings' ? 'Siguiente actividad: encontrar a los dos amigos del pez' : 'Aventura del océano'" [class.complete]="count() === 2">
+  <div class="rays" aria-hidden="true"></div>
+  <div class="bubbles" aria-hidden="true">◦　　°　　　◦<br>　°　　　◦　　　°<br>◦　　　°　　◦</div>
+  <div class="sand" aria-hidden="true"></div>
+  <div class="seaweed left" aria-hidden="true">〰</div><div class="seaweed right" aria-hidden="true">〰</div>
+  @if (!nextGift() || revealed()) {
+    <div class="reunited" aria-hidden="true"><span>🐟</span>@if (revealed() === 'fish-rings' || count() === 2) { <span>🐠</span><span>🐠</span> }</div>
+    <div class="treasure" aria-hidden="true">{{ count() === 2 ? '♡' : '✧' }}</div>
+    <p class="caption">{{ count() === 2 ? 'Hay encuentros que se quedan contigo.' : 'El océano guardaba algo para ti.' }}</p>
+  } @else if (nextGift()?.id === 'fish-clip') {
+    <button class="gold-fish" [style.left.%]="fishPositions[visits()].x" [style.top.%]="fishPositions[visits()].y" [disabled]="blocked() || saving()" [attr.aria-label]="'Seguir al pez dorado, encuentro ' + (visits() + 1) + ' de 3'" (click)="followFish()"><span aria-hidden="true">🐟</span><small>¡Por aquí!</small></button>
+    <p class="caption">{{ visits() === 0 ? 'Toca al pez: tiene un camino en mente.' : '¡Ahí está otra vez! ' + visits() + ' / 3' }}</p>
+  } @else {
+    <div class="guide-fish" aria-hidden="true">🐟</div>
+    <div class="hideouts">
+      @for (place of hidingPlaces; track place; let i = $index) {
+        <button class="hideout" [class.found]="friends().includes(i)" [disabled]="blocked() || saving() || friends().includes(i)" [attr.aria-label]="friends().includes(i) ? 'Amigo encontrado en ' + place : 'Buscar en ' + place" (click)="search(i)">
+          <span aria-hidden="true">{{ friends().includes(i) ? '🐠' : ['🐚', '🌿', '🪸', '🪨', '🐚'][i] }}</span><small>{{ friends().includes(i) ? '¡Aquí está!' : place }}</small>
+        </button>
+      }
+    </div>
+    <p class="caption">Amigos reunidos: {{ friends().length }} / 2</p>
+  }
+</div>
+@if (feedback() && !revealed() && nextGift()) { <p class="feedback" role="status">{{ feedback() }}</p> }
+@if (card(); as gift) {
+  <article class="gift-card" aria-live="polite">
+    <p class="eyebrow">{{ found().includes(gift.id) ? 'UN TESORO QUE YA ES TUYO' : 'TU SORPRESA DEL OCÉANO' }}</p>
+    @if (found().includes(gift.id)) {
+      <h2>{{ gift.name }}</h2>
+      <p>{{ gift.message }}</p><button class="back" (click)="review.set(null)">Seguir explorando</button>
+    } @else {
+      <h2>Una sorpresa del océano ♡</h2>
+      <p>Tu compañero de aventura tiene algo para entregarte. Cuando lo tengas en tus manos, ábrelo y vuelve aquí.</p>
+      <button class="primary" [disabled]="blocked() || saving()" (click)="openGift()">{{ saving() ? 'Guardando tu tesoro…' : 'Ya abrí mi regalo ♡' }}</button>
+      @if (saveError()) {
+        <p role="alert">{{ saveError() }}<br>Tu regalo todavía no está confirmado.</p>
+        <button class="back" [disabled]="saving()" (click)="retry.emit()">Volver a conectar</button>
+      }
+    }
+  </article>
+} @else if (nextGift()) {
+  <div class="help"><button class="back" [attr.aria-expanded]="help()" (click)="help.set(!help())">{{ help() ? 'Ocultar ayuda' : '¿Me ayudas un poquito?' }}</button>
+    @if (help()) { <p>{{ nextGift()?.id === 'fish-clip' ? 'Toca al pez tres veces. Se detiene para esperarte: no necesitas perseguirlo rápido.' : 'Un amigo se esconde en el alga y el otro en la caracola de la derecha.' }}</p> }
+  </div>
+}
+@if (!nextGift()) { <article class="ending" role="status"><p class="eyebrow">DOS TESOROS Y TRES NUEVOS AMIGOS</p><h2>Este mar también es tuyo ♡</h2><p>Al otro lado de la orilla nos espera un jardín.</p><button class="primary" [disabled]="blocked()" (click)="nextWorld.emit()">Ir al jardín →</button><br><button class="back" (click)="back.emit()">Volver al mapa</button></article> }
+@if (count()) { <div class="collection"><p class="eyebrow">TUS TESOROS DEL OCÉANO</p>
+  @for (gift of gifts; track gift.id) { @if (found().includes(gift.id)) { <button class="keepsake" (click)="reviewGift(gift.id)">{{ gift.name }}</button> } }
+</div> }

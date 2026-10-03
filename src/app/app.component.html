@@ -1,0 +1,34 @@
+<main>
+  <div class="stars" aria-hidden="true">✦ · ˚　　✧　　　·　✦<br>　　·　　　✦　　˚<br>✧　　　·　　　✦</div>
+  <header><button class="brand text-button" (click)="screen.set('map')">☾ mamor26</button><button class="counter" aria-label="Ver mi colección de regalos" (click)="screen.set('collection')">✦ {{ found().length }} / {{ total }}</button></header>
+  @if (progress.loading()) { <p class="sync-message" role="status">Recuperando tus estrellas…</p> }
+  @if (progress.error()) { <div class="sync-message" role="alert"><p>{{ progress.error() }}</p><button class="text-button" [disabled]="progress.saving()" (click)="progress.connect()">Volver a intentar</button></div> }
+  @if (screen() === 'welcome') {
+    <section class="welcome"><p class="eyebrow">UN REGALO DENTRO DE OTRO REGALO</p><div class="moon" aria-hidden="true">☾</div><p class="dedication">Para mi amor ♡</p><h1>Tu pequeño<br><em>universo</em></h1><p class="intro">He escondido algunas cositas para ti.<br>Algunas brillan. Otras se esconden.<br>Todas tienen un poquito de nosotros.</p><button class="primary" (click)="screen.set('map')">{{ found().length ? 'Continuar la aventura' : 'Entrar a mi universo' }} ✦</button><p class="footnote">Una pequeña aventura hecha para ti.</p></section>
+  } @else if (screen() === 'map') {
+    <section><p class="eyebrow">EL MAPA DE TUS SORPRESAS</p><h1>Cada lugar,<br><em>un pequeño secreto.</em></h1><p class="intro">Cada rincón se abre al completar el anterior.</p><div class="worlds">
+      @for (world of worlds; track world.id; let i = $index) { <button class="world" [disabled]="!worldAvailable(i) || progress.loading()" (click)="openWorld(i)"><span class="world-icon" aria-hidden="true">{{ world.icon }}</span><span><small>ETAPA {{ i + 1 }}</small><strong>{{ world.title }}</strong><span class="description">{{ world.description }}</span></span><span class="status">{{ worldStatus(i) }}</span></button> }
+    </div><button class="text-button" (click)="screen.set('collection')">Ver mis regalos encontrados ✦</button>
+    @if (mainComplete()) { <div><button class="primary" [disabled]="progress.loading()" (click)="finishAdventure()">{{ allComplete() ? 'Leer mi carta ♡' : 'Alguien todavía te espera…' }}</button></div> }
+    <p class="footnote">La sorpresa aparece después de abrir el regalo. Tu compañero de aventura te lo entregará en las manos.</p></section>
+  } @else if (screen() === 'collection') {
+    <section><button class="text-button" (click)="screen.set('map')">← Volver al mapa</button><p class="eyebrow">{{ found().length }} / {{ total }} REGALOS</p><h1>Mi pequeño <em>universo</em></h1><div class="inventory">@for (gift of allGifts; track gift.id; let i = $index) { <article><span aria-hidden="true">{{ found().includes(gift.id) ? '✦' : '·' }}</span><h2>{{ found().includes(gift.id) ? gift.name : 'Sorpresa ' + (i + 1) }}</h2>@if (found().includes(gift.id)) { <p>{{ gift.message }}</p> } @else { <p>Un secreto que todavía espera.</p> }</article> }</div></section>
+  } @else if (screen() === 'letter' && allComplete()) {
+    <section class="welcome"><p class="eyebrow">{{ total }} REGALOS · UN SOLO UNIVERSO</p><div class="moon" aria-hidden="true">☾</div><h1>Feliz cumpleaños,<br><em>mi amor.</em></h1><article class="letter">{{ letter }}</article><button class="primary" (click)="screen.set('collection')">Volver a mis recuerdos ✦</button></section>
+  } @else {
+    <section>
+      @if (screen() === 'frog' && solarComplete()) {
+        <app-chapter-world [chapter]="secret" [found]="found()" [blocked]="progress.loading() || !!progress.error() || progress.saving()" [saving]="progress.saving()" [saveError]="progress.error()" [nextLabel]="allComplete() ? 'Leer mi carta ♡' : 'Volver a mi aventura →'" (retry)="progress.connect()" (giftOpened)="discover($event)" (back)="screen.set('map')" (nextWorld)="finishAdventure()" />
+      } @else if (screen() === 'chapter' && worldAvailable(chapterIndex())) {
+        <app-chapter-world [chapter]="worlds[chapterIndex()]" [found]="found()" [blocked]="progress.loading() || !!progress.error() || progress.saving()" [saving]="progress.saving()" [saveError]="progress.error()" [nextLabel]="nextLabel()" (retry)="progress.connect()" (giftOpened)="discover($event)" (back)="screen.set('map')" (nextWorld)="nextChapter()" />
+      } @else if (screen() === 'ocean' && solarComplete()) {
+        <app-ocean-world [found]="found()" [blocked]="progress.loading() || !!progress.error() || progress.saving()" [saving]="progress.saving()" [saveError]="progress.error()" (retry)="progress.connect()" (giftOpened)="discover($event)" (back)="screen.set('map')" (nextWorld)="openWorld(2)" />
+      } @else {
+        <app-solar-world [found]="found()" [blocked]="progress.loading() || !!progress.error() || progress.saving()" [saving]="progress.saving()" [saveError]="progress.error()" (retry)="progress.connect()" (giftOpened)="discover($event)" (back)="screen.set('map')" (nextWorld)="openWorld(1)" />
+      }
+    </section>
+  }
+  @if (solarComplete() && screen() !== 'letter' && screen() !== 'frog') { <div class="companion"><button class="text-button" (click)="visitCompanion()" aria-label="Saludar a mi pequeña compañera">🐸</button>@if (frogVisits() > 0 && frogVisits() < 3 && !mainComplete()) { <p role="status">{{ frogVisits() === 1 ? '…croac. Parece que quiere acompañarte.' : 'Ya casi se anima a mostrarte su rincón. Salúdala otra vez.' }}</p> }</div> }
+  <div class="reset-controls">@if (confirmingReset()) { <p>¿Volver a empezar? Se borrarán las estrellas guardadas en todos los dispositivos.</p><button class="text-button" [disabled]="progress.loading() || progress.saving() || !!progress.error()" (click)="resetProgress()">{{ progress.saving() ? 'Reiniciando…' : 'Sí, reiniciar' }}</button><button class="text-button" [disabled]="progress.saving()" (click)="confirmingReset.set(false)">Cancelar</button> } @else { <button class="text-button" [disabled]="progress.loading() || progress.saving() || !!progress.error() || !found().length" (click)="confirmingReset.set(true)">Reiniciar aventura</button> }</div>
+  <footer>Hecho con cariño, para ti ♡</footer>
+</main>
